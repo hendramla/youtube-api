@@ -620,15 +620,11 @@ export const getComments = async (nextPage) => {
 
         const itemList = getItemList.filter((x => x.payload.commentEntityPayload));
 
-        // return itemList;
-
         for (const conitem of itemList) {
 
             const commentThread = conitem.payload.commentEntityPayload;
 
             if (commentThread) {
-
-
 
                 const comment = commentThread.properties;
                 const commentStats = commentThread.toolbar;
@@ -645,7 +641,7 @@ export const getComments = async (nextPage) => {
                     id: channelUrl ? channelUrl?.replace('@', '') : '',
                     title: channelUrl,
                     url: channelUrl ? channelUrl?.replace('@', '/channel/') : '',
-                    avatar: comment.avatarThumbnailUrl,
+                    avatar: commentThread.author.avatarThumbnailUrl,
                     verified,
                     artist,
                 };
@@ -746,60 +742,76 @@ export const getMoreComments = async (nextPage) => {
 
         if (!response) return [];
 
-        const itemList = response[0]?.appendContinuationItemsAction;
+        const commentHeader = response[0]?.reloadContinuationItemsCommand?.continuationItems[0]?.commentsHeaderRenderer;
 
-        if (!itemList?.continuationItems) {
+        const commentCounts = commentHeader?.countText?.runs?.map(x => x.text).join('');
+
+        let commentKeys = [];
+
+        try {
+            commentKeys = response[1]?.reloadContinuationItemsCommand.continuationItems.filter((x) => x.commentThreadRenderer).map((x) => {
+                const reply = x.commentThreadRenderer.replies || null;
+                const c = x.commentThreadRenderer.commentViewModel.commentViewModel;
+
+                let token = null;
+                if (reply) {
+                    token = reply.commentRepliesRenderer.contents[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token;
+                }
+
+                return {
+                    id: c.commentId,
+                    replyToken: token,
+                }
+
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
+        const getItemList = page.data?.frameworkUpdates?.entityBatchUpdate?.mutations || null;
+
+        if (!getItemList) {
             return [];
         }
 
-        for (const conitem of itemList.continuationItems) {
+        const itemList = getItemList.filter((x => x.payload.commentEntityPayload));
 
-            const commentThreadRenderer = conitem.commentThreadRenderer;
+        for (const conitem of itemList) {
 
-            if (commentThreadRenderer) {
+            const commentThread = conitem.payload.commentEntityPayload;
 
-                const comment = commentThreadRenderer.comment.commentRenderer;
-                const reply = commentThreadRenderer?.replies?.commentRepliesRenderer;
-                const repliesToken = reply?.contents[0]?.continuationItemRenderer
-                    ?.continuationEndpoint?.continuationCommand?.token;
+            if (commentThread) {
 
-                let artist = false;
-                if (comment.authorCommentBadge
-                    && comment.authorCommentBadge.authorCommentBadgeRenderer
-                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon
-                    && ["OFFICIAL_ARTIST_BADGE", "BADGE_STYLE_TYPE_VERIFIED_ARTIST"]
-                        .includes(comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType)
-                ) {
-                    artist = true;
-                }
+                const comment = commentThread.properties;
+                const commentStats = commentThread.toolbar;
 
-                let verified = false;
-                if (comment.authorCommentBadge
-                    && comment.authorCommentBadge.authorCommentBadgeRenderer
-                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon
-                    && ["CHECK", "CHECK_CIRCLE_THICK"]
-                        .includes(comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType)) {
-                    verified = true;
-                }
+                const verified = commentThread.author.isVerified;
+                const artist = commentThread.author.isArtist;
 
-                const channelUrl = comment.authorText.simpleText;
+                const foundToken = commentKeys.find((x) => x.id === comment.commentId)
+                const repliesToken = foundToken?.replyToken || null;
+
+                const channelUrl = commentThread.author.channelCommand.innertubeCommand.commandMetadata.webCommandMetadata.url?.replace('/', '');
+
+                console.log(commentThread.author);
 
                 const channel = {
                     id: channelUrl ? channelUrl?.replace('@', '') : '',
                     title: channelUrl,
                     url: channelUrl ? channelUrl?.replace('@', '/channel/') : '',
-                    avatar: comment.authorThumbnail.thumbnails,
+                    avatar: commentThread.author.avatarThumbnailUrl,
                     verified,
                     artist,
                 };
 
                 const commentItem = {
+                    id: comment.commentId,
                     channel,
-                    isOwner: comment.authorIsChannelOwner,
-                    content: comment.contentText?.runs?.map(x => x.text).join(''),
-                    publishedAt: comment.publishedTimeText?.runs?.map(x => x.text).join(''),
-                    likes: comment.voteCount?.simpleText,
-                    replyCount: comment.replyCount,
+                    isOwner: commentThread.author.isCreator,
+                    content: comment.content?.content,
+                    publishedAt: comment.publishedTime,
+                    likes: commentStats.likeCountLiked,
+                    replyCount: commentStats.replyCount,
                     repliesToken,
                 }
 
@@ -812,7 +824,7 @@ export const getMoreComments = async (nextPage) => {
 
                     const replyNextPage = { nextPageToken: nextPage.nextPageToken, nextPageContext: replyContext }
 
-                    const replies = await getCommentReplies(replyNextPage);
+                    const replies = await getMoreComments(replyNextPage);
 
                     commentItem.replies = replies;
                 }
@@ -825,6 +837,7 @@ export const getMoreComments = async (nextPage) => {
         }
 
         return await Promise.resolve({ items, nextPage: nextPage });
+
     } catch (ex) {
         console.error(ex);
         return await Promise.reject([]);
@@ -904,7 +917,7 @@ async function getCommentReplies(nextPage) {
                     id: channelUrl ? channelUrl?.replace('@', '') : '',
                     title: channelUrl,
                     url: channelUrl ? channelUrl?.replace('@', '/channel/') : '',
-                    avatar: comment.avatarThumbnailUrl,
+                    avatar: commentThread.author.avatarThumbnailUrl,
                     verified,
                     artist,
                 };
