@@ -90,7 +90,7 @@ export default function feedParser(json) {
                     title: json.title?.runs?.map((x) => x.text).join(''),
                     length: json.lengthText?.simpleText,
                     category: json?.metadata?.simpleText,
-                    thumbnails: json?.thumbnail?.thumbnails[0],
+                    thumbnail: json?.thumbnail?.thumbnails[0],
                     badges,
                 });
             }

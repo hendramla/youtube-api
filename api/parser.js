@@ -515,9 +515,14 @@ export const GetVideoDetails = async (videoId) => {
             isLive = true;
         }
 
-        const likeCount = videoInfo?.videoActions?.menuRenderer?.topLevelButtons[0]?.segmentedLikeDislikeButtonRenderer?.likeButton?.toggleButtonRenderer?.defaultText?.simpleText ?? 0;
 
-        const viewCount = isLive ? videoInfo?.viewCount?.videoViewCountRenderer?.viewCount?.runs?.map((x) => x.text).join('') : videoInfo.viewCount.videoViewCountRenderer?.shortViewCount?.simpleText;
+        const likeContainer = videoInfo?.videoActions?.menuRenderer?.topLevelButtons[0]?.segmentedLikeDislikeButtonViewModel;
+
+        const likeCount = likeContainer?.likeButtonViewModel?.likeButtonViewModel?.toggleButtonViewModel?.toggleButtonViewModel?.defaultButtonViewModel?.buttonViewModel?.title ||
+            0;
+
+        const viewCount = isLive ? videoInfo?.viewCount?.videoViewCountRenderer?.viewCount?.runs?.map((x) => x.text).join('') :
+            videoInfo?.viewCount?.videoViewCountRenderer?.shortViewCount?.simpleText || videoInfo?.viewCount?.videoViewCountRenderer?.extraShortViewCount?.simpleText || 0;
 
         const suggestionList = [];
         let suggestionToken = null;
@@ -553,7 +558,7 @@ export const GetVideoDetails = async (videoId) => {
         const res = {
             id: videoId,
             title: videoInfo.title.runs[0].text,
-            views: viewCount ?? 0,
+            views: viewCount,
             likes: likeCount,
             publishedAt: isLive ? videoInfo?.dateText?.simpleText : videoInfo?.relativeDateText?.simpleText,
             description: player.shortDescription ?? channelInfo.attributedDescription.content,
@@ -744,12 +749,10 @@ export const getMoreComments = async (nextPage) => {
 
         const commentHeader = response[0]?.reloadContinuationItemsCommand?.continuationItems[0]?.commentsHeaderRenderer;
 
-        const commentCounts = commentHeader?.countText?.runs?.map(x => x.text).join('');
-
-        let commentKeys = [];
+        const commentKeys = [];
 
         try {
-            commentKeys = response[1]?.reloadContinuationItemsCommand.continuationItems.filter((x) => x.commentThreadRenderer).map((x) => {
+            response[1]?.reloadContinuationItemsCommand.continuationItems.filter((x) => x.commentThreadRenderer).map((x) => {
                 const reply = x.commentThreadRenderer.replies || null;
                 const c = x.commentThreadRenderer.commentViewModel.commentViewModel;
 
@@ -758,10 +761,10 @@ export const getMoreComments = async (nextPage) => {
                     token = reply.commentRepliesRenderer.contents[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token;
                 }
 
-                return {
+                commentKeys.push({
                     id: c.commentId,
                     replyToken: token,
-                }
+                })
 
             });
         } catch (error) {
@@ -788,12 +791,10 @@ export const getMoreComments = async (nextPage) => {
                 const verified = commentThread.author.isVerified;
                 const artist = commentThread.author.isArtist;
 
-                const foundToken = commentKeys.find((x) => x.id === comment.commentId)
+                const foundToken = commentKeys.length ? commentKeys.find((x) => x.id === comment.commentId) : undefined
                 const repliesToken = foundToken?.replyToken || null;
 
                 const channelUrl = commentThread.author.channelCommand.innertubeCommand.commandMetadata.webCommandMetadata.url?.replace('/', '');
-
-                console.log(commentThread.author);
 
                 const channel = {
                     id: channelUrl ? channelUrl?.replace('@', '') : '',
@@ -1243,7 +1244,6 @@ export async function getFeed(name) {
                     } else if (richItemContent.postRenderer) {
                         item = parsePostRenderer(richItemContent.postRenderer);
                     }
-
 
                     return item;
 
