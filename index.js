@@ -37,11 +37,37 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(errorHandler);
 
-app.use('/api/', apiRouter);
 
 /**
  * Routes
- */
+*/
+app.get('/', function (req, res) {
+  return res.json({
+    success: true,
+    routes: {
+      '/api/': 'Home Page to get home feed',
+      '/api/trending': 'Trending videos and reels',
+      '/api/shopping': 'Browse products',
+      '/api/music': 'Music videos, Album',
+      '/api/movies': 'Browse movies',
+      '/api/live': 'Live Streaming',
+      '/api/gaming': 'Gaming videos, streams and video games',
+      '/api/news': 'Live News Channels, News clips and videos',
+      '/api/sports': 'Sports news and highlight videos',
+      '/api/learning': 'Educational video and posts',
+      '/api/fashion': 'Fashion page video and posts',
+      '/api/channels': 'Browse Channels',
+      '/api//playlist/:id': 'Playlist',
+      '/api/channel/:id': 'Get channel by ID',
+      '/api/watch/:id': 'Video details and comments with replies',
+      '/api/watch/:id/comments': 'Load more comments',
+      '/api/watch/:id/suggestions': 'Load more video suggestions',
+      '/api/search': 'Search videos',
+    }
+  })
+});
+
+app.use('/api/', apiRouter);
 
 // Express server config
 app.listen(port, () => {
