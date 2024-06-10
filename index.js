@@ -44,7 +44,7 @@ app.use('/api/', apiRouter);
  */
 
 // Express server config
-app.listen(port, host_name, () => {
+app.listen(port, () => {
   console.log('Express server is listening on port %d in %s mode', port, app.settings.env);
 });
 
