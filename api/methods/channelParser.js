@@ -24,13 +24,13 @@ export default function channelParser(data) {
     }
 
     return {
-        id: json.navigationEndpoint.commandMetadata.webCommandMetadata.url?.replace('/@', ''),
-        title: json.title.simpleText,
+        id: json?.navigationEndpoint?.commandMetadata?.webCommandMetadata.url?.replace('/@', ''),
+        title: json?.title?.simpleText,
         type: "channel",
         description: json?.descriptionSnippet?.runs?.map((x) => x.text).join(''),
-        avatar: json.thumbnail.thumbnails,
-        subscriber: json.subscriberCountText?.simpleText,
-        videos: json.videoCountText?.runs?.map((x) => x.text).join(''),
+        avatar: json?.thumbnail?.thumbnails?.pop(),
+        subscriber: json?.subscriberCountText?.simpleText,
+        videos: json?.videoCountText?.runs?.map((x) => x.text).join(''),
         verified,
         artist,
     }

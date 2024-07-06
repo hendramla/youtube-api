@@ -36,6 +36,8 @@ export default function cardParser(response) {
             id: channelUrl ? channelUrl?.replace('/@', '') : '',
             title: channelGet.map((x) => x.text).join(''),
             url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
+            // avatar: json?.channelThumbnail?.thumbnails?.pop(),
+            avatar: json,
             verified,
             artist,
         };
@@ -137,7 +139,7 @@ export default function cardParser(response) {
             id: channelUrl ? channelUrl?.replace('/@', '') : '',
             title: channelGet.map((x) => x.text).join(''),
             url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
-            avatar: json?.channelThumbnail?.thumbnails[0]?.url,
+            avatar: json?.channelThumbnail?.thumbnails?.pop(),
             verified,
             artist,
         };

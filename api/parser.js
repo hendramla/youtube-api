@@ -389,7 +389,7 @@ export const GetChannelById = async (channelId) => {
         const channel = {
             id: metadata?.ownerUrls[0]?.split('@')[1],
             title: metadata.title,
-            avatar: channelHeader?.image?.decoratedAvatarViewModel?.avatar?.avatarViewModel?.image?.sources,
+            avatar: channelHeader?.image?.decoratedAvatarViewModel?.avatar?.avatarViewModel?.image?.sources.pop(),
             descriptionToken: getDescriptionToken,
             ...fullDescription,
             banner,
@@ -400,7 +400,7 @@ export const GetChannelById = async (channelId) => {
         /**
          * Get Content of Channel
          */
-        if (fullDescription.vidoes) {
+        if (fullDescription.videos) {
             const items = tabs
                 .map((json) => {
                     if (json && json.tabRenderer) {
@@ -470,13 +470,7 @@ export const GetChannelById = async (channelId) => {
                         json.items.map((x) => {
                             const json = x.reelItemRenderer;
 
-                            reels.push({
-                                id: json.videoId,
-                                type: "reel",
-                                thumbnails: json.thumbnail.thumbnails,
-                                title: json.headline.simpleText,
-                                views: json.viewCountText.simpleText,
-                            })
+                            reels.push(shortVideoParser(json))
                         });
                     }
 

@@ -2,18 +2,31 @@ import cardParser from "./cardParser.js";
 import videoRenderer from "./videoRenderer.js";
 
 export default function feedParser(json) {
+
+    // console.log(json);
+
     let list = []
     if (json?.horizontalListRenderer) {
         const listItems = json.horizontalListRenderer.items;
 
         listItems.length ? listItems.map((x) => {
 
-
             if (x.compactStationRenderer) {
                 const json = x.compactStationRenderer;
 
+                const playList = json?.navigationEndpoint?.commandMetadata?.webCommandMetadata?.url;
+
+                let playListId = null;
+
+                if(playList) {
+                    const params =  new URL('https://www.youtube.com' + playList).searchParams;
+
+                    playListId = params.get('list');
+                }
 
                 list.push({
+                    id: playListId,
+                    type: "album",
                     title: json.title.simpleText,
                     description: json.description.simpleText,
                     videos: json.videoCountText?.runs?.map((x) => x.text).join(''),
@@ -208,7 +221,6 @@ export default function feedParser(json) {
         listItems.length ? listItems.map((x) => {
 
             if (x.gridVideoRenderer) {
-
                 list.push(cardParser(x));
             } else if (x.videoCardRenderer) {
                 list.push(cardParser(x));
@@ -244,7 +256,7 @@ export default function feedParser(json) {
                     type: 'channel',
                     title: json?.title?.simpleText,
                     url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
-                    avatar: json?.thumbnail?.thumbnails,
+                    avatar: json?.thumbnail?.thumbnails.pop(),
                     videos: json?.videoCountText?.runs?.map((x) => x.text).join(''),
                     subscribers: json?.subscriberCountText?.simpleText,
                     verified,
@@ -293,6 +305,7 @@ function gridVideoRenderer(json) {
         id: channelUrl ? channelUrl?.replace('/@', '') : '',
         title: json.shortBylineText.runs?.map((x) => x.text).join(''),
         url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
+        avatar: json?.channelThumbnail?.thumbnails?.pop(),
         verified,
         artist,
     };
