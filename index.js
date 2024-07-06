@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from "dotenv"
 import apiRouter from './api/router.js';
+import ApiError from './api/apiError.js';
 
 // Load .env file
 dotenv.config();
@@ -18,16 +19,6 @@ const corsOptions = {
   port: port,
 };
 
-// Error handler for any errors
-const errorHandler = (error, req, res, next) => {
-  // Logging the error here
-  console.log(error);
-  // Returning the status and error message to client
-  return res.status(400).json({
-    error: true,
-    message: error.message,
-  });
-}
 
 
 // Initialize Express
@@ -35,7 +26,6 @@ const app = express();
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(errorHandler);
 
 
 /**
@@ -68,6 +58,25 @@ app.get('/', function (req, res) {
 });
 
 app.use('/api/', apiRouter);
+
+
+/**
+ * Error Handing
+ */
+app.use((err, req, res, next) => {
+  return res.status(err.statusCode || 500).json(new ApiError(err.statusCode || 500, "An error occurred", err.message))
+})
+
+/**
+* 404 errors
+*/
+app.use("*", function (req, res) {
+  return res.status(404).json({
+      success: false,
+      message: "Page not found",
+  })
+})
+
 
 // Express server config
 app.listen(port, () => {
