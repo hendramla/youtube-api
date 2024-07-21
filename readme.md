@@ -1,10 +1,9 @@
 # Instalasi
 - Update & Upgrade
-
-```html
+- ```html
  apt-get update && apt-get upgrade -y && apt dist-upgrade -y && update-grub && reboot
-```
-Pastikan anda sudah login sebagai root sebelum menjalankan perintah dibawah
+ ```
+- Run
 ```html
  apt install nodejs npm -y && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash && source ~/.bashrc && nvm install v22.5.1 && apt install docker.io -y && apt install git && git clone https://github.com/hendramla/youtube-api.git youtube-api && cd youtube-api && npm install && && npm audit fix && docker build -t youtube-api . && docker run -d --restart=always -p 3000:3000 --name youtube-container youtube-api && systemctl enable docker
 ```
