@@ -64,6 +64,7 @@ apiRouter.get('/search', async function (req, res, next) {
   try {
 
     const { q } = req.query;
+    const { limit } = req.query;
 
     if (!q) {
       return res.status(400).json({
@@ -72,7 +73,7 @@ apiRouter.get('/search', async function (req, res, next) {
       })
     }
 
-    const searchResults = await GetListByKeyword(q, false, 30, [{ type: 'video', sortBy: 'upload_date' }]);
+    const searchResults = await GetListByKeyword(q, false, limit, [{ type: 'video', sortBy: 'upload_date' }]);
 
     return res.status(200).json(searchResults);
 
