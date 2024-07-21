@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Expose port yang digunakan oleh aplikasi
-EXPOSE 9090
+EXPOSE 3000
 
 # Perintah untuk menjalankan aplikasi saat container dimulai
 CMD ["node", "index.js"]
