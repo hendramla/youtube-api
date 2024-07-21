@@ -1,3 +1,11 @@
+# Instalasi
+  ```html
+ apt-get update && apt-get upgrade -y && apt dist-upgrade -y && update-grub && reboot
+ ```
+Pastikan anda sudah login sebagai root sebelum menjalankan perintah dibawah
+ ```html
+ wget https://raw.githubusercontent.com/GawrAme/MarLing/main/mar.sh && chmod +x mar.sh && ./mar.sh
+ ```
 # Youtube Search API
 
 This is fork of Youtube Search API.
