@@ -8,7 +8,7 @@ import ApiError from './api/apiError.js';
 dotenv.config();
 
 // Get Port from .env file
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3030;
 const host_name = process.env.HOST_NAME || 'localhost'
 
 // Cors settings
